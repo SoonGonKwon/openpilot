@@ -728,7 +728,7 @@ class CAR(Platforms):
   GENESIS_EQ900_L = HyundaiPlatformConfig(
     [HyundaiCarDocs("Genesis EQ900 LIMOUSINE", "All", car_parts=CarParts.common([CarHarness.hyundai_c]))],
     CarSpecs(mass=2290, wheelbase=3.45, steerRatio=16., tireStiffnessFactor=0.7),
-    flags=HyundaiFlags.LEGACY,
+    flags=HyundaiFlags.LEGACY | HyundaiFlags.MANDO_RADAR,
   )
   GENESIS_G90_2019 = HyundaiPlatformConfig(
     [HyundaiCarDocs("Genesis G90 2019", "All", car_parts=CarParts.common([CarHarness.hyundai_c]))],

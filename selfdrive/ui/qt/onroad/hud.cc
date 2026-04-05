@@ -36,6 +36,22 @@ void HudRenderer::updateState(const UIState &s) {
   v_ego_cluster_seen = v_ego_cluster_seen || car_state.getVEgoCluster() != 0.0;
   float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   speed = std::max<float>(0.0f, v_ego * (is_metric ? MS_TO_KPH : MS_TO_MPH));
+
+  // [RADAR_TRACK_TEST_START] - Remove this block when radar track testing is done
+  if (sm.alive("radarState")) {
+    const auto &radar_state = sm["radarState"].getRadarState();
+    const auto &lead = radar_state.getLeadOne();
+    radar_tracks_enabled = lead.getStatus();
+    radar_lead_drel = lead.getDRel();
+    radar_lead_vrel = lead.getVRel();
+    radar_lead_track_id = lead.getTrackId();
+    // Count radar points
+    radar_track_count = 0;
+    for (const auto &point : radar_state.getRadarPoints()) {
+      if (point.getTrackId() >= 0) radar_track_count++;
+    }
+  }
+  // [RADAR_TRACK_TEST_END]
 }
 
 void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
@@ -54,6 +70,10 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
   drawCurrentSpeed(p, surface_rect);
 
   p.restore();
+
+  // [RADAR_TRACK_TEST_START] - Remove this block when radar track testing is done
+  drawRadarTrackStatus(p, surface_rect);
+  // [RADAR_TRACK_TEST_END]
 }
 
 void HudRenderer::drawSetSpeed(QPainter &p, const QRect &surface_rect) {
@@ -110,3 +130,35 @@ void HudRenderer::drawText(QPainter &p, int x, int y, const QString &text, int a
   p.setPen(QColor(0xff, 0xff, 0xff, alpha));
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
+
+// [RADAR_TRACK_TEST_START] - Remove this entire method when radar track testing is done
+void HudRenderer::drawRadarTrackStatus(QPainter &p, const QRect &surface_rect) {
+  p.save();
+
+  QString status_text;
+  if (radar_tracks_enabled) {
+    status_text = QString("RT:ON  Trk:%1  #%2  %3m/%4km/h")
+      .arg(radar_track_count)
+      .arg(radar_lead_track_id)
+      .arg((int)radar_lead_drel)
+      .arg((int)(radar_lead_vrel * 3.6f));
+  } else {
+    status_text = "RT:OFF";
+  }
+
+  // Draw at top-right area
+  p.setFont(QFont("Inter", 28, QFont::Normal));
+  QRect text_rect(surface_rect.width() - 500, 15, 490, 50);
+
+  // Background for readability
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor(0, 0, 0, 140));
+  p.drawRoundedRect(text_rect.adjusted(-8, -4, 8, 4), 8, 8);
+
+  // Text
+  p.setPen(radar_tracks_enabled ? QColor(0x80, 0xd8, 0xa6) : QColor(0xa6, 0xa6, 0xa6));
+  p.drawText(text_rect, Qt::AlignVCenter | Qt::AlignRight, status_text);
+
+  p.restore();
+}
+// [RADAR_TRACK_TEST_END]
