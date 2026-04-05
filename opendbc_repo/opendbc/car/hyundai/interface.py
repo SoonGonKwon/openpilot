@@ -246,6 +246,14 @@ class CarInterface(CarInterfaceBase):
       result = enable_radar_tracks(CP, can_recv, can_send)
       params.put_bool("EnableRadarTracksResult", result)
 
+    # [RADAR_TRACK_TEST_START] - Firmware check, remove when done
+    try:
+      from openpilot.selfdrive.carrot.radar_fw_check import run_check_if_requested
+      run_check_if_requested(CP, can_recv, can_send)
+    except Exception as e:
+      print(f"[RadarFwCheck] skipped: {e}")
+    # [RADAR_TRACK_TEST_END]
+
     # for blinkers
     if CP.flags & HyundaiFlags.ENABLE_BLINKERS:
       disable_ecu(can_recv, can_send, bus=CanBus(CP).ECAN, addr=0x7B1, com_cont_req=b'\x28\x83\x01')
