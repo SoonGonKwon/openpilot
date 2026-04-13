@@ -115,6 +115,11 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"RouteCount", {PERSISTENT, INT, "0"}},
     {"SnoozeUpdate", {CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION, BOOL}},
     {"SshEnabled", {PERSISTENT, BOOL}},
+    {"TailscaleBackendRunning", {CLEAR_ON_MANAGER_START, BOOL}},
+    {"TailscaleBackendState",   {CLEAR_ON_MANAGER_START, STRING}},
+    {"TailscaleEnabled",        {PERSISTENT, BOOL, "1"}},
+    {"TailscaleIP",             {CLEAR_ON_MANAGER_START, STRING}},
+    {"TailscaleOnlyOnWiFi",     {PERSISTENT, BOOL}},
     {"UbloxAvailable", {PERSISTENT, BOOL}},
     {"UpdateAvailable", {CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION, BOOL}},
     {"UpdateFailedCount", {CLEAR_ON_MANAGER_START, INT}},
@@ -132,8 +137,12 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"Version", {PERSISTENT, STRING}},
 
     // carrot
+    {"ActiveRadarTrackCount",   {CLEAR_ON_MANAGER_START, INT, "0"}},
+    {"LogAutoUpload",           {PERSISTENT, BOOL, "0"}},
+    {"LogUploadServer",         {PERSISTENT, STRING}},
     {"LongitudinalPersonalityMax", {PERSISTENT, INT, "3"}},
     {"NetworkAddress", {CLEAR_ON_MANAGER_START, STRING}},
+    {"RadarCanLogger",          {PERSISTENT, BOOL, "1"}},
     {"ScreenRecord", {CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION, BOOL} },
     {"TrafficLight", {CLEAR_ON_MANAGER_START, STRING} },
 

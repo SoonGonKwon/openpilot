@@ -45,7 +45,7 @@ BU_: XXX
     """)
 
     # note: 0x501/0x502 seem to be special in 0x5XX range
-    for a in range(0x500, 0x500 + 32):
+    for a in range(0x500, 0x500 + 64):  # support up to 64 tracks (MANDO_RADAR_64)
         f.write(f"""
 BO_ {a} RADAR_TRACK_{a:x}: 8 RADAR
  SG_ UNKNOWN_1 : 7|8@0- (1,0) [-128|127] "" XXX
