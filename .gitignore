@@ -105,3 +105,4 @@ Pipfile
 .history
 .ionide
 .vs
+selfdrive/pandad/pandad_api_impl.so
