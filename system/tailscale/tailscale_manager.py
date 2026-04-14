@@ -141,26 +141,18 @@ def main() -> None:
 
   if not install_tailscale():
     cloudlog.error("Tailscale not available, exiting tailscale_manager")
-    return
+    while True:
+      time.sleep(3600)
 
   ensure_daemon_running()
   running = publish_backend_state(params)
   if params.get("TailscaleEnabled") is None:
     params.put_bool("TailscaleEnabled", running)
 
-  last_attempt = 0.0
-
+  cloudlog.info("tailscale_manager: daemon started, no further polling needed")
+  # tailscaled가 연결 상태를 자체 유지 — 폴링 불필요
   while True:
-    ensure_daemon_running()
-    enabled = params.get_bool("TailscaleEnabled")
-    running = publish_backend_state(params)
-
-    now = time.monotonic()
-    if enabled != running and (now - last_attempt) >= RETRY_INTERVAL_S:
-      reconcile_state(params, enabled)
-      last_attempt = now
-
-    time.sleep(POLL_INTERVAL_S)
+    time.sleep(3600)
 
 
 if __name__ == "__main__":
