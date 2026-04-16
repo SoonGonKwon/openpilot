@@ -108,6 +108,7 @@ class HyundaiFlags(IntFlag):
   # If 0x500 is present on bus 1 it probably has a Mando radar outputting radar points.
   # If no points are outputted by default it might be possible to turn it on using  selfdrive/debug/hyundai_enable_radar_points.py
   MANDO_RADAR = 2 ** 12
+  MANDO_RADAR_64 = 2 ** 30
   CANFD = 2 ** 13
 
   # The radar does SCC on these cars when HDA I, rather than the camera
@@ -728,7 +729,7 @@ class CAR(Platforms):
   GENESIS_EQ900_L = HyundaiPlatformConfig(
     [HyundaiCarDocs("Genesis EQ900 LIMOUSINE", "All", car_parts=CarParts.common([CarHarness.hyundai_c]))],
     CarSpecs(mass=2290, wheelbase=3.45, steerRatio=16., tireStiffnessFactor=0.7),
-    flags=HyundaiFlags.LEGACY,
+    flags=HyundaiFlags.LEGACY | HyundaiFlags.MANDO_RADAR | HyundaiFlags.MANDO_RADAR_64,
   )
   GENESIS_G90_2019 = HyundaiPlatformConfig(
     [HyundaiCarDocs("Genesis G90 2019", "All", car_parts=CarParts.common([CarHarness.hyundai_c]))],

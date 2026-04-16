@@ -11,6 +11,7 @@ from openpilot.common.filter_simple import MyMovingAverage
 SCC_TID = 0
 RADAR_START_ADDR = 0x500
 RADAR_MSG_COUNT = 32
+RADAR_MSG_COUNT_64 = 64
 RADAR_START_ADDR_CANFD1 = 0x210
 RADAR_MSG_COUNT1 = 16
 RADAR_START_ADDR_CANFD2 = 0x3A5 # Group 2, Group 1: 0x210 2개씩있어서 일단 보류.
@@ -63,8 +64,9 @@ class RadarInterface(RadarInterfaceBase):
         self.radar_msg_count = RADAR_MSG_COUNT2
     else:
       self.radar_start_addr = RADAR_START_ADDR
-      self.radar_msg_count = RADAR_MSG_COUNT
-      
+      self.radar_msg_count = RADAR_MSG_COUNT_64 if (CP.flags & HyundaiFlags.MANDO_RADAR_64) else RADAR_MSG_COUNT
+
+    self.track_valid_frames = {}
     self.params = Params()
     self.radar_tracks = self.params.get_int("EnableRadarTracks") >= 1
     self.updated_tracks = set()
@@ -127,6 +129,18 @@ class RadarInterface(RadarInterfaceBase):
 
     return None      
 
+  def _check_track_valid(self, t_id, valid, min_frames=3):
+    """Track validity with hysteresis: require min_frames consecutive valid frames.
+
+    Prevents flickering radar points from noise — a track must be consistently
+    valid for min_frames before being reported as measured.
+    """
+    if valid:
+      self.track_valid_frames[t_id] = self.track_valid_frames.get(t_id, 0) + 1
+    else:
+      self.track_valid_frames[t_id] = 0
+    return valid and self.track_valid_frames[t_id] >= min_frames
+
   def _update(self, updated_messages):
 
     t_id = 32
@@ -141,7 +155,7 @@ class RadarInterface(RadarInterfaceBase):
       else:
         valid = msg['STATE'] in (3, 4)
 
-      self.pts[t_id].measured = bool(valid)
+      self.pts[t_id].measured = self._check_track_valid(t_id, valid)
       if not valid:
         self.pts[t_id].dRel = 0
         self.pts[t_id].yRel = 0
@@ -179,7 +193,7 @@ class RadarInterface(RadarInterfaceBase):
         msg = self.rcp_tracks.vl[f"RADAR_TRACK_{addr:x}"]
 
         valid = msg['VALID_CNT2'] > 10
-        self.pts[t_id].measured = bool(valid)
+        self.pts[t_id].measured = self._check_track_valid(t_id, valid)
         if not valid:
           self.pts[t_id].dRel = 0
           self.pts[t_id].yRel = 0
