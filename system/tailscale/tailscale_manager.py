@@ -15,8 +15,6 @@ from openpilot.common.swaglog import cloudlog
 TAILSCALE_BIN = "/data/tailscale/tailscale"
 TAILSCALE_DAEMON = "/data/tailscale/tailscaled"
 TAILSCALE_SOCKET = "/tmp/tailscaled.sock"
-POLL_INTERVAL_S = 2.0
-RETRY_INTERVAL_S = 5.0
 TAILSCALE_DOWNLOAD_URL = "https://pkgs.tailscale.com/stable/tailscale_latest_arm64.tgz"
 
 
