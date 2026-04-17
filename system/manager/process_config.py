@@ -62,6 +62,8 @@ def only_offroad(started: bool, params: Params, CP: car.CarParams) -> bool:
   return not started
 
 def enable_updated(started: bool, params: Params, CP: car.CarParams) -> bool:
+  return False  # auto-update disabled
+  # original:
   return not started and params.get_bool("SoftwareMenu")
 
 def check_fleet(started, params, CP: car.CarParams) -> bool:
