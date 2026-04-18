@@ -139,6 +139,12 @@ class HudRenderer(Widget):
     self._traffic_red_icon = gui_app.texture('images/traffic_red.png')
     self._traffic_green_icon = gui_app.texture('images/traffic_green.png')
 
+    self._ic_turn_l = gui_app.texture('images/turn_l.png')
+    self._ic_turn_r = gui_app.texture('images/turn_r.png')
+    self._ic_lane_change_l = gui_app.texture('images/lane_change_l.png')
+    self._ic_lane_change_r = gui_app.texture('images/lane_change_r.png')
+    self._ic_turn_u = gui_app.texture('images/turn_u.png')
+
     self._set_speed_override = SetSpeedOverride()
     self._debug_speed_panel = False
     self._engaged = False
@@ -353,14 +359,6 @@ class HudRenderer(Widget):
     return gap
 
   def _get_driving_mode_text_and_color(self) -> tuple[str, rl.Color]:
-    carState = ui_state.sm["carState"]
-    if carState.brakeHoldActive:
-      return tr("brake hold"), rl.Color(255, 0, 0, 230)
-    elif carState.softHoldActive:
-      return tr("soft hold"), rl.Color(255, 165, 0, 230)
-    elif carState.carrotCruise:
-      return tr("carrot"), rl.Color(0, 255, 0, 230)
-
     try:
       mode_val = int(ui_state.sm["longitudinalPlan"].myDrivingMode)
     except Exception:
@@ -385,7 +383,7 @@ class HudRenderer(Widget):
     self._memory_usage = 0
     self._free_space = 0.0
     self._voltage = 0.0
-    self._plot_renderer = None
+    #self._plot_renderer = None
 
     try:
       device_state = sm["deviceState"]
@@ -599,8 +597,8 @@ class HudRenderer(Widget):
       draw_text_ui_style(
         mode_text, dx, dy - 2, 32, rl.WHITE,
         font=self._font_display,
-        border_width=0.0,
-        shadow_offset=0.0,
+        border_width=2.0,
+        shadow_offset=4.0,
         align="center_bottom",
       )
 
@@ -608,8 +606,8 @@ class HudRenderer(Widget):
         draw_text_ui_style(
           "GPS", dx, dy - 45, 30, rl.GREEN,
           font=self._font_display,
-          border_width=0.0,
-          shadow_offset=0.0,
+          border_width=2.0,
+          shadow_offset=4.0,
           align="center_bottom",
         )
 
@@ -618,8 +616,8 @@ class HudRenderer(Widget):
     draw_text_ui_style(
       str(gap), bx + 220, by + 77, 40, rl.WHITE,
       font=self._font_display,
-      border_width=0.0,
-      shadow_offset=0.0,
+      border_width=2.0,
+      shadow_offset=4.0,
       align="center_bottom",
     )
 
@@ -657,8 +655,8 @@ class HudRenderer(Widget):
     draw_text_ui_style(
       gear, gx, gy + 5, 70, rl.WHITE,
       font=self._font_display,
-      border_width=0.0,
-      shadow_offset=0.0,
+      border_width=2.0,
+      shadow_offset=4.0,
       align="center_bottom",
     )
 
@@ -679,8 +677,8 @@ class HudRenderer(Widget):
       draw_text_ui_style(
         "APN", dx, dy, 40, rl.WHITE,
         font=self._font_display,
-        border_width=0.0,
-        shadow_offset=0.0,
+        border_width=2.0,
+        shadow_offset=4.0,
         align="center_bottom",
       )
     elif active_carrot >= 1:
@@ -695,8 +693,8 @@ class HudRenderer(Widget):
       draw_text_ui_style(
         "APM", dx, dy, 40, rl.WHITE,
         font=self._font_display,
-        border_width=0.0,
-        shadow_offset=0.0,
+        border_width=2.0,
+        shadow_offset=4.0,
         align="center_bottom",
       )
 
@@ -704,8 +702,8 @@ class HudRenderer(Widget):
       draw_text_ui_style(
         "ROUTE", dx, dy - 45, 30, rl.WHITE,
         font=self._font_display,
-        border_width=0.0,
-        shadow_offset=0.0,
+        border_width=2.0,
+        shadow_offset=4.0,
         align="center_bottom",
       )
 
@@ -736,8 +734,8 @@ class HudRenderer(Widget):
     draw_text_ui_style(
       label, dx, dy - 45, 30, rl.WHITE,
       font=self._font_display,
-      border_width=0.0,
-      shadow_offset=0.0,
+      border_width=2.0,
+      shadow_offset=4.0,
       align="center_bottom",
     )
 
@@ -753,8 +751,8 @@ class HudRenderer(Widget):
     draw_text_ui_style(
       str(disp_speed), dx, dy, 40, rl.WHITE,
       font=self._font_display,
-      border_width=0.0,
-      shadow_offset=0.0,
+      border_width=2.0,
+      shadow_offset=4.0,
       align="center_bottom",
     )
 
@@ -803,26 +801,357 @@ class HudRenderer(Widget):
     # CPU
     cpu_fill = rl.Color(255, 0, 0, 255) if (self._cpu_temp > 80 and self._blink_timer <= 8) else ok_color
     self._draw_round_box(dx - 65, dy - 38, 130, 90, cpu_fill, line_color=rl.WHITE, roundness=0.16, segments=8, line_thickness=2)
-    draw_text_ui_style("CPU", dx, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
-    draw_text_ui_style(f"{self._cpu_temp:.0f}°C", dx, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
+    draw_text_ui_style("CPU", dx, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
+    draw_text_ui_style(f"{self._cpu_temp:.0f}°C", dx, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
 
     # MEM
     dx2 = dx + 150
     mem_fill = rl.Color(255, 0, 0, 255) if (self._memory_usage > 85 and self._blink_timer <= 8) else ok_color
     self._draw_round_box(dx2 - 65, dy - 38, 130, 90, mem_fill, line_color=rl.WHITE, roundness=0.16, segments=8, line_thickness=2)
-    draw_text_ui_style("MEM", dx2, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
-    draw_text_ui_style(f"{self._memory_usage}%", dx2, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
+    draw_text_ui_style("MEM", dx2, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
+    draw_text_ui_style(f"{self._memory_usage}%", dx2, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
 
     # DISK / VOLT
     dx3 = dx2 + 150
     self._draw_round_box(dx3 - 65, dy - 38, 130, 90, ok_color, line_color=rl.WHITE, roundness=0.16, segments=8, line_thickness=2)
 
     if self._disp_timer < 32:
-      draw_text_ui_style("DISK", dx3, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
-      draw_text_ui_style(f"{100 - self._free_space:.0f}%", dx3, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
+      draw_text_ui_style("DISK", dx3, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
+      draw_text_ui_style(f"{100 - self._free_space:.0f}%", dx3, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
     else:
-      draw_text_ui_style("VOLT", dx3, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
-      draw_text_ui_style(f"{self._voltage:.1f}V", dx3, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=0.0, shadow_offset=0.0, align="center_bottom")
+      draw_text_ui_style("VOLT", dx3, dy - 5, 25, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
+      draw_text_ui_style(f"{self._voltage:.1f}V", dx3, dy + 40, 40, rl.WHITE, font=self._font_display, border_width=1.0, shadow_offset=4.0, align="center_bottom")
+
+  def _draw_date_time(self, rect: rl.Rectangle) -> None:
+    show_datetime = ui_state.params.get_int("ShowDateTime")
+    if show_datetime <= 0:
+      return
+
+    now = time.localtime()
+    weekdays_ko = ["일", "월", "화", "수", "목", "금", "토"]
+
+    x = int(rect.x + 170)
+    y = int(rect.y + 120)
+
+    if show_datetime in (1, 2):
+      draw_text_ui_style(
+        time.strftime("%H:%M", now), x, y, 100, rl.WHITE,
+        font=self._font_display,
+        border_width=3.0,
+        shadow_offset=8.0,
+        align="center_bottom",
+      )
+
+    if show_datetime in (1, 3):
+      weekday = weekdays_ko[(now.tm_wday + 1) % 7]
+      date_text = f"{time.strftime('%m-%d', now)}({weekday})"
+      draw_text_ui_style(
+        date_text, x, y + 70, 60, rl.WHITE,
+        font=self._font_display,
+        border_width=3.0,
+        shadow_offset=8.0,
+        align="center_bottom",
+      )
+
+  def _get_tpms_color(self, tpms: float) -> rl.Color:
+    if tpms < 5 or tpms > 60:
+      return rl.Color(255, 255, 255, 220)
+    if tpms < 31:
+      return rl.Color(255, 90, 90, 220)
+    return rl.Color(255, 255, 255, 220)
+
+  def _get_tpms_text(self, tpms: float) -> str:
+    if tpms < 5 or tpms > 60:
+      return '  -'
+    return f'{round(tpms):.0f}'
+
+  def _draw_tpms_top_right(self, rect: rl.Rectangle) -> None:
+    show_tpms = 1 #ui_state.params.get_int('ShowTpms')
+    if show_tpms not in (1, 3):
+      return
+
+    try:
+      tpms = ui_state.sm['carState'].tpms
+      fl = float(tpms.fl)
+      fr = float(tpms.fr)
+      rl_v = float(tpms.rl)
+      rr = float(tpms.rr)
+    except Exception:
+      return
+
+    bx = rect.x + rect.width - 125
+    by = rect.y + 130
+    dw = 80
+
+    draw_text_ui_style(
+      self._get_tpms_text(fl), bx - dw, by - 55, 40, self._get_tpms_color(fl),
+      font=self._font_display, border_width=1.0, shadow_offset=4.0, align='center_bottom',
+    )
+    draw_text_ui_style(
+      self._get_tpms_text(fr), bx + dw, by - 55, 40, self._get_tpms_color(fr),
+      font=self._font_display, border_width=1.0, shadow_offset=4.0, align='center_bottom',
+    )
+    draw_text_ui_style(
+      self._get_tpms_text(rl_v), bx - dw, by + 70, 40, self._get_tpms_color(rl_v),
+      font=self._font_display, border_width=1.0, shadow_offset=4.0, align='center_bottom',
+    )
+    draw_text_ui_style(
+      self._get_tpms_text(rr), bx + dw, by + 70, 40, self._get_tpms_color(rr),
+      font=self._font_display, border_width=1.0, shadow_offset=4.0, align='center_bottom',
+    )
+
+  def _get_turn_info_hud_data(self) -> dict:
+    try:
+      cm = ui_state.sm["carrotMan"]
+    except Exception:
+      return {
+        "active_carrot": 0,
+        "x_turn_info": 0,
+        "x_dist_to_turn": 0,
+        "n_go_pos_dist": 0,
+        "n_go_pos_time": 0,
+        "atc_type": "",
+        "sdi_descr": "",
+        "road_name": "",
+        "tbt_main_text": "",
+      }
+
+    try:
+      active_carrot = int(cm.activeCarrot)
+    except Exception:
+      active_carrot = 0
+
+    try:
+      x_turn_info = int(cm.xTurnInfo)
+    except Exception:
+      x_turn_info = 0
+
+    try:
+      x_dist_to_turn = int(cm.xDistToTurn)
+    except Exception:
+      x_dist_to_turn = 0
+
+    try:
+      n_go_pos_dist = int(cm.nGoPosDist)
+    except Exception:
+      n_go_pos_dist = 0
+
+    try:
+      n_go_pos_time = int(cm.nGoPosTime)
+    except Exception:
+      n_go_pos_time = 0
+
+    try:
+      atc_type = str(cm.atcType or "")
+    except Exception:
+      atc_type = ""
+
+    try:
+      sdi_descr = str(cm.szSdiDescr or "")
+    except Exception:
+      sdi_descr = ""
+
+    try:
+      road_name = str(cm.szPosRoadName or "")
+    except Exception:
+      road_name = ""
+
+    try:
+      tbt_main_text = str(cm.szTBTMainText or "")
+    except Exception:
+      tbt_main_text = ""
+
+    return {
+      "active_carrot": active_carrot,
+      "x_turn_info": x_turn_info,
+      "x_dist_to_turn": x_dist_to_turn,
+      "n_go_pos_dist": n_go_pos_dist,
+      "n_go_pos_time": n_go_pos_time,
+      "atc_type": atc_type,
+      "sdi_descr": sdi_descr,
+      "road_name": road_name,
+      "tbt_main_text": tbt_main_text,
+    }
+
+  def _format_turn_distance_text(self, dist_m: int) -> str:
+    if dist_m <= 0:
+      return ""
+
+    if ui_state.is_metric:
+      if dist_m < 1000:
+        return f"{dist_m} m"
+      return f"{dist_m / 1000.0:.1f} km"
+    else:
+      if dist_m < 1609:
+        return f"{int(dist_m * 3.28084)} ft"
+      return f"{dist_m / 1609.344:.1f} mi"
+
+  def _format_eta_text(self, remain_sec: int) -> str:
+    if remain_sec <= 0:
+      return ""
+
+    eta_tm = time.localtime(time.time() + remain_sec)
+    remain_min = remain_sec / 60.0
+    return f"도착: {remain_min:.1f}분({eta_tm.tm_hour:02d}:{eta_tm.tm_min:02d})"
+
+  def _format_go_pos_distance_text(self, dist_m: int) -> str:
+    if dist_m <= 0:
+      return ""
+
+    if ui_state.is_metric:
+      return f"{dist_m / 1000.0:.1f}km"
+    else:
+      return f"{dist_m / 1000.0 * KM_TO_MILE:.1f}mile"
+
+  def _draw_text_left_bottom(self, text: str, x: float, y: float, size: int, color, font=None, border_width: float = 2.0, shadow_offset: float = 4.0):
+    if not text:
+      return
+
+    draw_text_ui_style(
+      text, x, y, size, color,
+      font=font or self._font_display,
+      border_width=border_width,
+      shadow_offset=shadow_offset,
+      align="left_bottom",
+    )
+
+  def _draw_turn_icon(self, turn_info: int, bx: int, by: int, icon_size: int = 140):
+    if turn_info == 1:
+      self._draw_texture_rect(self._ic_turn_l, bx - icon_size / 2, by - icon_size / 2, icon_size, icon_size)
+    elif turn_info == 2:
+      self._draw_texture_rect(self._ic_turn_r, bx - icon_size / 2, by - icon_size / 2, icon_size, icon_size)
+    elif turn_info == 3:
+      self._draw_texture_rect(self._ic_lane_change_l, bx - icon_size / 2, by - icon_size / 2, icon_size, icon_size)
+    elif turn_info == 4:
+      self._draw_texture_rect(self._ic_lane_change_r, bx - icon_size / 2, by - icon_size / 2, icon_size, icon_size)
+    elif turn_info == 7:
+      self._draw_texture_rect(self._ic_turn_u, bx - icon_size / 2, by - icon_size / 2, icon_size, icon_size)
+    elif turn_info == 6:
+      draw_text_ui_style(
+        "TG", bx, by + 20, 35, rl.WHITE,
+        font=self._font_display,
+        border_width=2.0,
+        shadow_offset=4.0,
+        align="center_bottom",
+      )
+    elif turn_info == 8:
+      draw_text_ui_style(
+        "목적지", bx, by + 20, 35, rl.WHITE,
+        font=self._font_display,
+        border_width=2.0,
+        shadow_offset=4.0,
+        align="center_bottom",
+      )
+    else:
+      draw_text_ui_style(
+        f"감속:{turn_info}", bx, by + 20, 35, rl.WHITE,
+        font=self._font_display,
+        border_width=2.0,
+        shadow_offset=4.0,
+        align="center_bottom",
+      )
+
+  def _draw_turn_info_hud(self, rect: rl.Rectangle):
+    if rect.width < 1200:
+      return
+
+    info = self._get_turn_info_hud_data()
+    n_go_pos_dist = info["n_go_pos_dist"]
+    n_go_pos_time = info["n_go_pos_time"]
+
+    if not (n_go_pos_dist > 0 and n_go_pos_time > 0):
+      return
+
+    tbt_x = int(rect.x + rect.width - 800)
+    tbt_y = int(rect.y + rect.height - 250)
+
+    self._draw_round_box(
+      tbt_x,
+      tbt_y - 60,
+      790,
+      300,
+      rl.Color(0, 0, 0, 120),
+      line_color=rl.WHITE,
+      roundness=30.0 / 300.0,
+      segments=12,
+      line_thickness=2,
+    )
+
+    if info["tbt_main_text"]:
+      self._draw_text_left_bottom(
+        info["tbt_main_text"], tbt_x + 20, tbt_y - 15, 40, rl.WHITE,
+        font=self._font_bold, border_width=2.0, shadow_offset=4.0,
+      )
+
+    x_turn_info = info["x_turn_info"]
+    x_dist_to_turn = info["x_dist_to_turn"]
+
+    if x_turn_info > 0:
+      bx = tbt_x + 100
+      by = tbt_y + 85
+
+      if info["atc_type"]:
+        fill_color = rl.Color(0, 255, 0, 100) if "prepare" in info["atc_type"] else rl.GREEN
+        self._draw_round_box(
+          bx - 80, by - 90, 160, 230,
+          fill_color,
+          line_color=rl.BLACK,
+          roundness=15.0 / 230.0,
+          segments=8,
+          line_thickness=1,
+        )
+
+      self._draw_turn_icon(x_turn_info, bx, by, 140)
+
+      dist_text = self._format_turn_distance_text(x_dist_to_turn)
+      if dist_text:
+        draw_text_ui_style(
+          dist_text,
+          bx, by + 120, 40, rl.WHITE,
+          font=self._font_bold,
+          border_width=2.0,
+          shadow_offset=4.0,
+          align="center_bottom",
+        )
+
+    if info["sdi_descr"]:
+      label_x = tbt_x + 200
+      label_y = tbt_y + 200
+      size = measure_text_cached(self._font_bold, info["sdi_descr"], 40)
+      box_h = max(48, int(size.y + 13))
+      self._draw_round_box(
+        label_x - 10,
+        label_y - int(size.y) - 2,
+        int(size.x) + 20,
+        box_h,
+        rl.GREEN,
+        roundness=10.0 / box_h,
+        segments=8,
+        line_thickness=0,
+      )
+      self._draw_text_left_bottom(
+        info["sdi_descr"], label_x, label_y, 40, rl.WHITE,
+        font=self._font_bold, border_width=1.5, shadow_offset=3.0,
+      )
+    elif info["road_name"]:
+      self._draw_text_left_bottom(
+        info["road_name"], tbt_x + 200, tbt_y + 200, 40, rl.WHITE,
+        font=self._font_bold, border_width=1.5, shadow_offset=3.0,
+      )
+
+    eta_text = self._format_eta_text(n_go_pos_time)
+    if eta_text:
+      self._draw_text_left_bottom(
+        eta_text, tbt_x + 190, tbt_y + 80, 50, rl.WHITE,
+        font=self._font_bold, border_width=2.0, shadow_offset=4.0,
+      )
+
+    go_dist_text = self._format_go_pos_distance_text(n_go_pos_dist)
+    if go_dist_text:
+      self._draw_text_left_bottom(
+        go_dist_text, tbt_x + 310, tbt_y + 130, 50, rl.WHITE,
+        font=self._font_bold, border_width=2.0, shadow_offset=4.0,
+      )
 
   def _draw_date_time(self, rect: rl.Rectangle) -> None:
     show_datetime = ui_state.params.get_int("ShowDateTime")
@@ -916,27 +1245,32 @@ class HudRenderer(Widget):
     self._draw_carrot_lower_status(bx, by)
     self._draw_carrot_speed_limit_box(bx, by)
     self._draw_carrot_device_state(bx, by)
+    self._draw_turn_info_hud(rect)
   
 
 
 class PlotRenderer:
+  PLOT_MAX = 400
+
   def __init__(self):
+    self._plot_size = 0
+    self._plot_index = 0
+    self._plot_queue = [[0.0] * self.PLOT_MAX for _ in range(3)]
+    self._plot_min = 0.0
+    self._plot_max = 0.0
     self._plot_x = 350.0
-    self._plot_y = 40.0
     self._plot_width = 1000.0
+    self._plot_y = 40.0
     self._plot_height = 300.0
     self._plot_dx = 2.0
-    self._plot_size = 400
-    self._plot_min = -2.0
-    self._plot_max = 2.0
     self._show_plot_mode_prev = -1
-    self._plot_queue = [deque(maxlen=self._plot_size) for _ in range(3)]
 
   def _clear(self):
-    for q in self._plot_queue:
-      q.clear()
-    self._plot_min = -2.0
-    self._plot_max = 2.0
+    self._plot_size = 0
+    self._plot_index = 0
+    self._plot_min = 0.0
+    self._plot_max = 0.0
+    self._plot_queue = [[0.0] * self.PLOT_MAX for _ in range(3)]
 
   def _make_plot_data(self, sm, show_plot_mode: int):
     car_state = sm['carState']
@@ -1058,54 +1392,71 @@ class PlotRenderer:
     return [0.0, 0.0, 0.0], 'no data'
 
   def _update_plot_queue(self, plot_data):
+    self._plot_index = (self._plot_index + 1) % self.PLOT_MAX
+
     for i in range(3):
-      self._plot_queue[i].append(float(plot_data[i]))
+      self._plot_queue[i][self._plot_index] = float(plot_data[i])
 
-    mins = []
-    maxs = []
-    for q in self._plot_queue:
-      if len(q) > 0:
-        mins.append(min(q))
-        maxs.append(max(q))
+    if self._plot_size < self.PLOT_MAX:
+      self._plot_size += 1
 
-    self._plot_min = min(mins) if mins else -2.0
-    self._plot_max = max(maxs) if maxs else 2.0
+    self._plot_min = float('inf')
+    self._plot_max = float('-inf')
+    for i in range(3):
+      values = self._plot_queue[i][:self._plot_size] if self._plot_size < self.PLOT_MAX else self._plot_queue[i]
+      self._plot_min = min(self._plot_min, min(values))
+      self._plot_max = max(self._plot_max, max(values))
+
+    if self._plot_min == float('inf'):
+      self._plot_min = -2.0
+    if self._plot_max == float('-inf'):
+      self._plot_max = 2.0
 
     if self._plot_min > -2.0:
       self._plot_min = -2.0
     if self._plot_max < 2.0:
       self._plot_max = 2.0
 
-  def _draw_plotting(self, values, x_base, color, font):
-    if len(values) == 0:
+  def _draw_plotting(self, index: int, x_base: float, y_base: float, color, font):
+    if self._plot_size <= 0:
       return
 
     plot_range = self._plot_max - self._plot_min
-    ratio = self._plot_height if plot_range < 1.0 else (self._plot_height / plot_range)
+    plot_ratio = self._plot_height if plot_range < 1.0 else (self._plot_height / plot_range)
 
-    prev_x = None
-    prev_y = None
-    start = self._plot_size - len(values)
+    prev = None
+    latest_x = None
+    latest_y = None
+    latest_value = 0.0
 
-    for i, value in enumerate(values):
-      x = x_base + (start + i) * self._plot_dx
-      y = self._plot_y + self._plot_height - (value - self._plot_min) * ratio
-      if prev_x is not None:
-        rl.draw_line_ex(rl.Vector2(prev_x, prev_y), rl.Vector2(x, y), 3.0, color)
-      prev_x = x
-      prev_y = y
+    for i in range(self._plot_size):
+      data = self._plot_queue[index][(self._plot_index - i + self.PLOT_MAX) % self.PLOT_MAX]
+      plot_y = y_base + self._plot_height - (data - self._plot_min) * plot_ratio
+      plot_x = x_base + (self._plot_size - i) * self._plot_dx
 
-    last_value = float(values[-1])
-    label_x = x_base + self._plot_size * self._plot_dx + 50
-    label_y = self._plot_y + self._plot_height - (last_value - self._plot_min) * ratio
-    draw_text_ui_style(
-      f'{last_value:.2f}', label_x, label_y, 40, color,
-      font=font, border_width=2.0, shadow_offset=4.0, align='center_bottom',
-    )
+      pt = rl.Vector2(plot_x, plot_y)
+      if prev is not None:
+        rl.draw_line_ex(prev, pt, 3.0, color)
+      else:
+        latest_x = plot_x
+        latest_y = plot_y
+        latest_value = data
+      prev = pt
+
+    if latest_x is not None and latest_y is not None:
+      draw_text_ui_style(
+        f'{latest_value:.2f}', latest_x + 50, latest_y + (40 if index > 0 else 0), 40, color,
+        font=font, border_width=2.0, shadow_offset=4.0, align='center_bottom',
+      )
 
   def draw(self, rect: rl.Rectangle, font) -> None:
     show_plot_mode = ui_state.params.get_int('ShowPlotMode')
-    if show_plot_mode <= 0:
+    if show_plot_mode == 0:
+      return
+    try:
+      if not ui_state.sm.alive['carState'] or not ui_state.sm.alive['longitudinalPlan']:
+        return
+    except Exception:
       return
 
     if show_plot_mode != self._show_plot_mode_prev:
@@ -1119,13 +1470,17 @@ class PlotRenderer:
 
     self._update_plot_queue(plot_data)
 
+    if rect.width < 1200:
+      return
+
     x_base = rect.x + self._plot_x
+    y_base = rect.y + self._plot_y
     colors = [rl.YELLOW, rl.GREEN, rl.Color(255, 165, 0, 255)]
 
     for i in range(3):
-      self._draw_plotting(list(self._plot_queue[i]), x_base, colors[i], font)
+      self._draw_plotting(i, x_base, y_base, colors[i], font)
 
     draw_text_ui_style(
-      title, x_base + 400, self._plot_y - 20, 25, rl.WHITE,
+      title, x_base + 400, y_base - 20, 25, rl.WHITE,
       font=font, border_width=2.0, shadow_offset=4.0, align='center_bottom',
     )
