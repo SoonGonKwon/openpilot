@@ -193,7 +193,8 @@ def main() -> None:
         time.sleep(POLL_INTERVAL)
         continue
 
-      server_raw = params.get("LogUploadServer", encoding="utf-8")
+      server_raw_b = params.get("LogUploadServer")
+      server_raw = server_raw_b.decode("utf-8") if isinstance(server_raw_b, bytes) else (server_raw_b or "")
       server_url = (server_raw or "").strip() or DEFAULT_SERVER
 
       segments = get_pending_segments(realdata_dir)
