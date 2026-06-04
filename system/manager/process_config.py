@@ -151,7 +151,6 @@ procs = [
   PythonProcess("carrot_cluster", "selfdrive.carrot.cluster_autorun", enable_cluster_hud, restart_if_crash=True),
 
   PythonProcess("tailscale_manager", "system.tailscale.tailscale_manager", always_run),
-  PythonProcess("video_uploader", "selfdrive.carrot.video_uploader", always_run),
 
   #Xiaoge data broadcaster (conditional on ShareData param)
   PythonProcess("xiaoge_data", "selfdrive.carrot.xiaoge_data", enable_xiaoge_data),
