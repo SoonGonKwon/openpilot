@@ -147,7 +147,7 @@ class RadarInterface(RadarInterfaceBase):
         self.track_valid_frames[t_id] = self.track_valid_frames.get(t_id, 0) + 1
       else:
         self.track_valid_frames[t_id] = 0
-      measured = valid and self.track_valid_frames.get(t_id, 0) >= 3
+      measured = valid and self.track_valid_frames.get(t_id, 0) >= 1
       self.pts[t_id].measured = measured
       if not valid:
         self.pts[t_id].dRel = 0
@@ -190,7 +190,7 @@ class RadarInterface(RadarInterfaceBase):
           self.track_valid_frames[t_id] = self.track_valid_frames.get(t_id, 0) + 1
         else:
           self.track_valid_frames[t_id] = 0
-        measured = valid and self.track_valid_frames.get(t_id, 0) >= 3
+        measured = valid and self.track_valid_frames.get(t_id, 0) >= 1
         self.pts[t_id].measured = measured
         if not valid:
           self.pts[t_id].dRel = 0
