@@ -43,6 +43,37 @@ STICKY_PATH_Y_STD_GAIN = 0.5
 #   현재: measured>=1 이므로 cnt>4 ⇒ 동일하게 ~5프레임 지속 트랙만 표시
 LEAD_DISPLAY_MIN_CNT = 4
 
+# 측면 표시 리스트(leadsLeft/Right) 오탐 필터 임계값.
+# 주행로그 분석(2026-06-10): 전체 표시 박스의 29%가 정지물(|vLead|<5km/h)이고
+# 그 정지물의 |yRel|/|dPath| 중앙값이 ~10m로 옆차로(2~4m)가 아닌 도로변 구조물
+# (터널벽/가드레일/표지판)이었다. 이동 차량의 60%는 |dPath| 4m 이내에 분포.
+# → 정지물(vLead 임계 미만) + 원거리(dPath 임계 초과)를 표시에서 제외하고,
+#   같은 차량의 멀티트랙(근접 dRel/yRel)을 1개로 병합한다.
+# 주의: 이 필터는 '그려지는' 리스트에만 적용한다. 차선변경 사각지대 제어가 쓰는
+#   leadLeft/leadRight(단수)는 지역변수 left_list/right_list에서 계산되므로 영향 없음.
+DISPLAY_MIN_VLEAD = 1.0      # m/s. |vLead| 이하 = 정지 구조물 → 측면 표시 제외 (정차 차량은 leadOne/center가 담당)
+DISPLAY_MAX_DPATH = 7.5      # m. |dPath| 초과 = 주행경로에서 먼 도로변 구조물/대향차 → 표시 제외
+DISPLAY_CLUSTER_DREL = 5.0   # m. 같은 차량 길이 범위 내 중복 트랙 병합 기준(종방향)
+DISPLAY_CLUSTER_YREL = 1.5   # m. 같은 차량 중복 트랙 병합 기준(횡방향)
+
+
+def _dedup_display_leads(leads):
+  """같은 차량에서 나온 다중 레이더 트랙(근접 dRel/yRel)을 1개로 병합. 가까운 dRel 우선."""
+  kept = []
+  for ld in sorted(leads, key=lambda d: d['dRel']):
+    if any(abs(ld['dRel'] - o['dRel']) < DISPLAY_CLUSTER_DREL and
+           abs(ld['yRel'] - o['yRel']) < DISPLAY_CLUSTER_YREL for o in kept):
+      continue
+    kept.append(ld)
+  return kept
+
+
+def _side_display_leads(leads):
+  """측면(좌/우) 표시용: 정지 구조물·원거리 구조물 제외 후 중복 병합."""
+  kept = [ld for ld in leads
+          if abs(ld['vLead']) > DISPLAY_MIN_VLEAD and abs(ld['dPath']) < DISPLAY_MAX_DPATH]
+  return _dedup_display_leads(kept)
+
 
 def laplacian_pdf(x: float, mu: float, b: float):
   diff = abs(x - mu) / max(b, 1e-4)
@@ -762,9 +793,12 @@ class RadarD:
 
       c.cut_in_count = max(c.cut_in_count - 1, 0)
 
-    self.radar_state.leadsLeft   = left_list
-    self.radar_state.leadsRight  = right_list
-    self.radar_state.leadsCenter = center_list
+    # 그려지는 표시 리스트에만 오탐 필터(정지 구조물/원거리/중복) 적용.
+    # 아래 leadLeft/leadRight(차선변경 사각지대 제어용)는 원본 left_list/right_list에서
+    # 계산하므로 제어 동작에는 전혀 영향이 없다.
+    self.radar_state.leadsLeft   = _side_display_leads(left_list)
+    self.radar_state.leadsRight  = _side_display_leads(right_list)
+    self.radar_state.leadsCenter = _dedup_display_leads(center_list)
     self.radar_state.leadsCutIn = cutin_list
     self.leadCutIn = min(
       (ld for ld in cutin_list if 3 < ld['dRel'] < 50 and ld['vLead'] > 4),
