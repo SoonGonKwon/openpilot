@@ -33,6 +33,16 @@ STICKY_FAR_DREL = 60.0
 STICKY_MAX_DPATH_FAR = 1.2
 STICKY_PATH_Y_STD_GAIN = 0.5
 
+# 주변차 속도 박스(leadsLeft/Right) 표시용 최소 측정 프레임.
+# radar_interface 의 measured 히스테리시스를 3→1 프레임으로 낮추면서
+# 한 차량의 멀티패스/사이드로브 반사(깜빡이는 유령 트랙)가 즉시 measured 되어
+# 한 대에 속도 박스가 여러 개 찍히는 문제가 발생. 실제 추종 대상(leadOne)은
+# selected_count 스티키 로직으로 별도 선택되므로 빠른 인식을 유지하고,
+# 표시 전용 리스트에만 패치 이전과 동일한 누적 지속성(총 ~5프레임)을 복원한다.
+#   이전: track_valid_frames>=3 + alive(cnt>2) ⇒ 표시까지 ~5프레임
+#   현재: measured>=1 이므로 cnt>4 ⇒ 동일하게 ~5프레임 지속 트랙만 표시
+LEAD_DISPLAY_MIN_CNT = 4
+
 
 def laplacian_pdf(x: float, mu: float, b: float):
   diff = abs(x - mu) / max(b, 1e-4)
@@ -738,7 +748,8 @@ class RadarD:
             ld['modelProb'] = 0.03
             cutin_list.append(ld)
           c.cut_in_count += 2
-        left_list.append(ld)
+        if c.cnt > LEAD_DISPLAY_MIN_CNT:  # 깜빡이는 유령 트랙 억제 (멀티패스 중복 표시 방지)
+          left_list.append(ld)
       else:
         ld = c.get_RadarState(0, 0)
         if self.lane_line_available and c.in_lane_prob_future > 0.1 and c.cnt > int(2.0/DT_MDL):
@@ -746,7 +757,8 @@ class RadarD:
             ld['modelProb'] = 0.03
             cutin_list.append(ld)
           c.cut_in_count += 2
-        right_list.append(ld)
+        if c.cnt > LEAD_DISPLAY_MIN_CNT:  # 깜빡이는 유령 트랙 억제 (멀티패스 중복 표시 방지)
+          right_list.append(ld)
 
       c.cut_in_count = max(c.cut_in_count - 1, 0)
 
