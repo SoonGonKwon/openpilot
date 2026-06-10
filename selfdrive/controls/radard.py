@@ -52,7 +52,10 @@ LEAD_DISPLAY_MIN_CNT = 4
 # 주의: 이 필터는 '그려지는' 리스트에만 적용한다. 차선변경 사각지대 제어가 쓰는
 #   leadLeft/leadRight(단수)는 지역변수 left_list/right_list에서 계산되므로 영향 없음.
 DISPLAY_MIN_VLEAD = 1.0      # m/s. |vLead| 이하 = 정지 구조물 → 측면 표시 제외 (정차 차량은 leadOne/center가 담당)
-DISPLAY_MAX_DPATH = 7.5      # m. |dPath| 초과 = 주행경로에서 먼 도로변 구조물/대향차 → 표시 제외
+DISPLAY_MAX_DPATH = 6.0      # m. |dPath| 초과 = 주행경로에서 먼 도로변 구조물/대향차 → 표시 제외
+DISPLAY_MAX_YREL = 6.0       # m. |yRel| 초과 = 도로 가장자리 방음벽/가드레일. 레이더가 측면 정지물을
+                             #    vLead≈v_ego(나란히 달리는 차)로 보고해 vLead 필터를 빠져나가므로,
+                             #    횡거리 자체로 직접 차단한다(곡선로에서 dPath와 yRel이 달라지는 경우 보완).
 DISPLAY_CLUSTER_DREL = 5.0   # m. 같은 차량 길이 범위 내 중복 트랙 병합 기준(종방향)
 DISPLAY_CLUSTER_YREL = 1.5   # m. 같은 차량 중복 트랙 병합 기준(횡방향)
 
@@ -71,7 +74,9 @@ def _dedup_display_leads(leads):
 def _side_display_leads(leads):
   """측면(좌/우) 표시용: 정지 구조물·원거리 구조물 제외 후 중복 병합."""
   kept = [ld for ld in leads
-          if abs(ld['vLead']) > DISPLAY_MIN_VLEAD and abs(ld['dPath']) < DISPLAY_MAX_DPATH]
+          if abs(ld['vLead']) > DISPLAY_MIN_VLEAD
+          and abs(ld['dPath']) < DISPLAY_MAX_DPATH
+          and abs(ld['yRel']) < DISPLAY_MAX_YREL]
   return _dedup_display_leads(kept)
 
 
