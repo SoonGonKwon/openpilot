@@ -13,6 +13,7 @@ from openpilot.common.filter_simple import MyMovingAverage
 SCC_TID = 0
 RADAR_START_ADDR = 0x500
 RADAR_MSG_COUNT = 32
+RADAR_MSG_COUNT_64 = 64
 RADAR_START_ADDR_CANFD1 = 0x210
 RADAR_MSG_COUNT1 = 16
 RADAR_START_ADDR_CANFD2 = 0x3A5 # Group 2, Group 1: 0x210 2媛쒖뵫?덉뼱???쇰떒 蹂대쪟.
@@ -108,7 +109,7 @@ class RadarInterface(RadarInterfaceBase):
         self.radar_msg_count = RADAR_MSG_COUNT2
     else:
       self.radar_start_addr = RADAR_START_ADDR
-      self.radar_msg_count = RADAR_MSG_COUNT
+      self.radar_msg_count = RADAR_MSG_COUNT_64 if (CP.flags & HyundaiFlags.MANDO_RADAR_64) else RADAR_MSG_COUNT
       
     self.params = Params()
     self.radar_tracks = self.params.get_int("EnableRadarTracks") >= 1
