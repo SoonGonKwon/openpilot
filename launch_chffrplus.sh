@@ -168,7 +168,7 @@ function launch {
   invalidate_modeld_build_if_needed
   invalidate_native_build_if_needed
 
-  rm openpilot/selfdrive/pandad/*.so
+  rm -f openpilot/selfdrive/pandad/*.so
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1500 > /tmp/launch_log
   if python -c "import flask" > /dev/null 2>&1; then
